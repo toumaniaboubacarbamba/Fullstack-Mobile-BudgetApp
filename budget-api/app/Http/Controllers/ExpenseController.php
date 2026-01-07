@@ -5,35 +5,34 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Expense;
 
+
 class ExpenseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // On récupère toutes les dépenses et on les retourne en JSON
-    return response()->json(Expense::all());
+        // On récupère que les dépenses de l'utilisateur authentifié
+    return response()->json($request->user()->expenses);
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //on valide que les données entrantes sont correctes
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'amount' => 'required|numeric',
-            'category' => 'required|string',
-        ]);
+{
+    $validated = $request->validate([
+        'title' => 'required|string',
+        'amount' => 'required|numeric',
+        'category' => 'required|string',
+    ]);
 
-        // on crée la dépense
-        $expense = Expense::create($validated);
+    // On crée la dépense à travers la relation de l'utilisateur
+    $expense = $request->user()->expenses()->create($validated);
 
-        // 3. On repond à flutter avec un code 201 et la donnée en json
-        return response()->json($expense, 201);
-    }
+    return response()->json($expense, 201);
+}
 
     /**
      * Display the specified resource.
