@@ -1,36 +1,43 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense.model.dart';
 
 class ApiService {
-  // L'adresse IP spéciale pour l'émulateur Android vers ton PC
   final String baseUrl = "http://10.0.2.2:8000/api/expenses";
 
-  // Récupérer la liste des dépenses
+  // Fonction privée pour récupérer les headers avec le token
+  Future<Map<String, String>> _getHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token', // C'est ici que la magie opère
+    };
+  }
+
+  // Récupérer les dépenses
   Future<List<Expense>> fetchExpenses() async {
-  try {
-    final response = await http.get(Uri.parse(baseUrl));
-    print("Status Code: ${response.statusCode}");
-    print("Response Body: '${response.body}'"); // Les guillemets ici sont importants pour voir si c'est vide
+    final response = await http.get(
+      Uri.parse(baseUrl),
+      headers: await _getHeaders(),
+    );
 
     if (response.statusCode == 200) {
-      if (response.body.isEmpty) return []; // Sécurité si c'est vide
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((data) => Expense.fromJson(data)).toList();
     } else {
-      throw Exception('Erreur serveur: ${response.statusCode}');
+      throw Exception('Erreur: ${response.statusCode}');
     }
-  } catch (e) {
-    print("Erreur attrapée: $e");
-    rethrow;
   }
-}
 
-  // Envoyer une nouvelle dépense
+  // Ajouter une dépense
   Future<void> addExpense(Expense expense) async {
     final response = await http.post(
       Uri.parse(baseUrl),
-      headers: {"Content-Type": "application/json"},
+      headers: await _getHeaders(),
       body: jsonEncode(expense.toJson()),
     );
 
@@ -39,11 +46,15 @@ class ApiService {
     }
   }
 
+  // Supprimer une dépense
   Future<void> deleteExpense(int id) async {
-  final response = await http.delete(Uri.parse("$baseUrl/$id"));
+    final response = await http.delete(
+      Uri.parse("$baseUrl/$id"),
+      headers: await _getHeaders(),
+    );
 
-  if (response.statusCode != 200) {
-    throw Exception('Erreur lors de la suppression');
+    if (response.statusCode != 200) {
+      throw Exception('Erreur lors de la suppression');
+    }
   }
-}
 }

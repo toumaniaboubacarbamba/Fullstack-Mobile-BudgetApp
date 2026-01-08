@@ -1,19 +1,28 @@
 import 'package:budget_app/add_expense_screen.dart';
+import 'package:budget_app/login_screnn.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'models/expense.model.dart';
 import 'services/api_service.dart';
 
-void main() => runApp(const BudgetApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final String? token = prefs.getString('token');
+
+  runApp(BudgetApp(isLoggedIn: token != null));
+}
 
 class BudgetApp extends StatelessWidget {
-  const BudgetApp({super.key});
+  final bool isLoggedIn;
+  const BudgetApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const ExpenseListScreen(),
+      home: isLoggedIn ? const ExpenseListScreen() : const LoginScreen(),
     );
   }
 }
@@ -108,7 +117,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                       leading: CircleAvatar(child: Text(expense.category[0])),
                       title: Text(expense.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(expense.category),
-                      trailing: Text("${expense.amount} €", style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                      trailing: Text("${expense.amount} CFA", style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 );
