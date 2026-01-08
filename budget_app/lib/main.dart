@@ -51,7 +51,22 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mon Budget")),
+      appBar: AppBar(title: const Text("Mon Budget"),
+      actions: [
+  IconButton(
+    icon: const Icon(Icons.logout),
+    onPressed: () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('token'); // On supprime le token
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context, 
+          MaterialPageRoute(builder: (context) => const LoginScreen())
+        );
+      }
+    },
+  )
+],),
       body: FutureBuilder<List<Expense>>(
   future: futureExpenses,
   builder: (context, snapshot) {
@@ -77,7 +92,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
               children: [
                 const Text("Dépenses Totales", style: TextStyle(color: Colors.white70, fontSize: 16)),
                 const SizedBox(height: 10),
-                Text("${total.toStringAsFixed(2)} €", 
+                Text("${total.toStringAsFixed(2)} CFA", 
                     style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
               ],
             ),
