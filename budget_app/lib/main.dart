@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/expense.model.dart';
 import 'services/api_service.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +22,17 @@ class BudgetApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Colors.teal,
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+        ),
+      ),
       home: isLoggedIn ? const ExpenseListScreen() : const LoginScreen(),
     );
   }
@@ -41,6 +52,36 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   double _calculateTotal(List<Expense> expenses) {
   return expenses.fold(0, (sum, item) => sum + item.amount);
 }
+
+  IconData getCategoryIcon(String category) {
+    switch (category) {
+      case 'Alimentation':
+        return Icons.restaurant;
+      case 'Transport':
+        return Icons.directions_car;
+      case 'Loisirs':
+        return Icons.sports_esports;
+      case 'Santé':
+        return Icons.medical_services;
+      default:
+        return Icons.monetization_on;
+    }
+  }
+
+  Color getCategoryColor(String category) {
+    switch (category) {
+      case 'Alimentation':
+        return Colors.deepOrange;
+      case 'Transport':
+        return Colors.indigo;
+      case 'Loisirs':
+        return Colors.green;
+      case 'Santé':
+        return Colors.pink;
+      default:
+        return Colors.teal;
+    }
+  }
 
   @override
   void initState() {
@@ -84,7 +125,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
             padding: const EdgeInsets.all(20),
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Colors.blue, Colors.blueAccent]),
+              gradient: const LinearGradient(colors: [Colors.orange, Colors.orangeAccent ]),
               borderRadius: BorderRadius.circular(15),
               boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))]
             ),
@@ -129,7 +170,11 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                   child: Card(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: ListTile(
-                      leading: CircleAvatar(child: Text(expense.category[0])),
+                      leading: CircleAvatar(
+                        backgroundColor: getCategoryColor(expense.category),
+                        radius: 22,
+                        child: Icon(getCategoryIcon(expense.category), color: Colors.white),
+                      ),
                       title: Text(expense.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(expense.category),
                       trailing: Text("${expense.amount} CFA", style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),

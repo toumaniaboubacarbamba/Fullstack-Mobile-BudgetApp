@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:budget_app/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,6 +51,12 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(controller: _passwordController, decoration: const InputDecoration(labelText: "Mot de passe"), obscureText: true),
             const SizedBox(height: 20),
             ElevatedButton(onPressed: login, child: const Text("Se connecter")),
+            TextButton(
+  onPressed: () {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
+  },
+  child: const Text("Pas encore de compte ? Inscrivez-vous"),
+),
           ],
         ),
       ),
