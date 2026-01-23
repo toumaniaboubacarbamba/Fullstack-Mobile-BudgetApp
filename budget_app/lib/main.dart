@@ -83,6 +83,107 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
     }
   }
 
+  // Génère les sections pour le PieChart à partir de la liste des dépenses
+  List<PieChartSectionData> _getSections(List<Expense> expenses) {
+    // 1. On regroupe les montants par catégorie
+    final Map<String, double> data = {};
+    for (var e in expenses) {
+      data[e.category] = (data[e.category] ?? 0) + e.amount;
+    }
+
+    // 2. Couleurs par catégorie (cyclique)
+    final List<Color> colors = [Colors.blue, Colors.red, Colors.green, Colors.orange, Colors.purple];
+    int colorIndex = 0;
+
+    // 3. Création des sections
+    return data.entries.map((entry) {
+      final color = colors[colorIndex % colors.length];
+      colorIndex++;
+      return PieChartSectionData(
+        color: color,
+        value: entry.value,
+        title: '${entry.key}\n${entry.value.toStringAsFixed(0)} CFA',
+        radius: 50,
+        titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+      );
+    }).toList();
+  }
+
+  IconData _getIcon(String category) {
+    switch (category) {
+      case 'Alimentation':
+        return Icons.fastfood;
+      case 'Transport':
+        return Icons.directions_car;
+      case 'Loisirs':
+        return Icons.movie;
+      case 'Santé':
+        return Icons.medical_services;
+      default:
+        return Icons.payments;
+    }
+  }
+
+  Widget _buildTotalCard(double total) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Colors.orange, Colors.orangeAccent]),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))]
+      ),
+      child: Column(
+        children: [
+          const Text("Dépenses Totales", style: TextStyle(color: Colors.white70, fontSize: 16)),
+          const SizedBox(height: 10),
+          Text("${total.toStringAsFixed(2)} CFA", style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListView(List<Expense> expenses) {
+    return ListView.builder(
+      itemCount: expenses.length,
+      itemBuilder: (context, index) {
+        final expense = expenses[index];
+        return Dismissible(
+          key: Key(expense.id.toString()),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          onDismissed: (direction) async {
+            await apiService.deleteExpense(expense.id!);
+            setState(() {
+              futureExpenses = apiService.fetchExpenses();
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${expense.title} supprimé")),
+            );
+          },
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue.withOpacity(0.1),
+                child: Icon(_getIcon(expense.category), color: Colors.blue),
+              ),
+              title: Text(expense.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(expense.category),
+              trailing: Text("${expense.amount} CFA", style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -119,71 +220,26 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
 
       return Column(
         children: [
-          // --- LE WIDGET DU TOTAL ---
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Colors.orange, Colors.orangeAccent ]),
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))]
-            ),
-            child: Column(
-              children: [
-                const Text("Dépenses Totales", style: TextStyle(color: Colors.white70, fontSize: 16)),
-                const SizedBox(height: 10),
-                Text("${total.toStringAsFixed(2)} CFA", 
-                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-          
-          Expanded(
-            child: ListView.builder(
-              itemCount: expenses.length,
-              itemBuilder: (context, index) {
-                final expense = expenses[index];
-                
-                return Dismissible(
-                  key: Key(expense.id.toString()), // Clé unique pour Flutter
-                  direction: DismissDirection.endToStart, // Glisser de droite à gauche
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  onDismissed: (direction) async {
-                    // 1. Appel au backend pour supprimer en base
-                    await apiService.deleteExpense(expense.id!);
-                    
-                    // 2. Refresh de l'UI et du Total
-                    setState(() {
-                      futureExpenses = apiService.fetchExpenses();
-                    });
+          _buildTotalCard(total),
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("${expense.title} supprimé")),
-                    );
-                  },
-                  child: Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: getCategoryColor(expense.category),
-                        radius: 22,
-                        child: Icon(getCategoryIcon(expense.category), color: Colors.white),
-                      ),
-                      title: Text(expense.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(expense.category),
-                      trailing: Text("${expense.amount} CFA", style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                );
-              },
+          if (expenses.isNotEmpty)
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sections: _getSections(expenses),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 40,
+                ),
+              ),
             ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Divider(),
           ),
+
+          Expanded(child: _buildListView(expenses)),
         ],
       );
     }
