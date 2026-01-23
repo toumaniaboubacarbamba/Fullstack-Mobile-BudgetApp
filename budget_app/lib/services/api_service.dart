@@ -20,18 +20,23 @@ class ApiService {
 
   // Récupérer les dépenses
   Future<List<Expense>> fetchExpenses() async {
+  try {
     final response = await http.get(
       Uri.parse(baseUrl),
       headers: await _getHeaders(),
-    );
+    ).timeout(const Duration(seconds: 40)); // On laisse 40s au serveur pour se réveiller
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((data) => Expense.fromJson(data)).toList();
     } else {
+      print("Détails de l'erreur: ${response.body}"); // Pour voir le JSON d'erreur
       throw Exception('Erreur: ${response.statusCode}');
     }
+  } catch (e) {
+    throw Exception('Le serveur met trop de temps à répondre. Réessayez dans 30 secondes.');
   }
+}
 
   // Ajouter une dépense
   Future<void> addExpense(Expense expense) async {
