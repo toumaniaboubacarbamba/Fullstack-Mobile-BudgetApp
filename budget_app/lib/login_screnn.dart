@@ -17,27 +17,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> login() async {
+  try {
     final response = await http.post(
-      Uri.parse("http://10.0.2.2:8000/api/login"), // On va créer cette route
+      Uri.parse("https://fullstack-mobile-budgetapp.onrender.com/api/login"), // URL RENDER
+      headers: {
+        'Accept': 'application/json', // INDISPENSABLE
+      },
       body: {
         'email': _emailController.text,
         'password': _passwordController.text,
       },
-    );
+    ).timeout(const Duration(seconds: 40)); // Pour laisser le temps au serveur gratuit de se réveiller
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', data['token']); // On sauve le token !
+      await prefs.setString('token', data['token']);
 
       if (mounted) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ExpenseListScreen()));
+        Navigator.pushReplacement(
+          context, 
+          MaterialPageRoute(builder: (context) => const ExpenseListScreen())
+        );
       }
     } else {
-      // Afficher une erreur
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Identifiants incorrects")));
+      final errorData = json.decode(response.body);
+      String message = errorData['message'] ?? "Identifiants incorrects";
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Erreur de connexion : Vérifiez votre internet ou attendez le réveil du serveur"))
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {

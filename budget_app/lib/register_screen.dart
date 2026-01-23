@@ -28,8 +28,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://10.0.2.2:8000/api/register"),
-        headers: {'Accept': 'application/json'},
+        Uri.parse("https://fullstack-mobile-budgetapp.onrender.com/api/register"),
+        headers: {'Accept': 'application/json','Content-Type': 'application/json',},
         body: {
           'name': _nameController.text,
           'email': _emailController.text,
