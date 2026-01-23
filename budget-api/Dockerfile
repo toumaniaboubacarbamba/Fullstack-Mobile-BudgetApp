@@ -33,5 +33,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 # 9. Exposer le port 80
 EXPOSE 80
 
+
 # 10. Lancer les migrations et démarrer le serveur
-CMD php artisan migrate --force && apache2-foreground
+# À la fin de ton Dockerfile
+CMD php artisan config:clear && php artisan migrate --force && apache2-foreground
