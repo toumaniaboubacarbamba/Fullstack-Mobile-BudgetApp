@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: {
         'email': _emailController.text,
         'password': _passwordController.text,
-      },
+    },
     ).timeout(const Duration(seconds: 40)); // Pour laisser le temps au serveur gratuit de se réveiller
 
     if (response.statusCode == 200) {

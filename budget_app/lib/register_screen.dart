@@ -30,12 +30,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await http.post(
         Uri.parse("https://fullstack-mobile-budgetapp.onrender.com/api/register"),
         headers: {'Accept': 'application/json','Content-Type': 'application/json',},
-        body: {
-          'name': _nameController.text,
-          'email': _emailController.text,
-          'password': _passwordController.text,
-          'password_confirmation': _confirmController.text, // Important pour Laravel
-        },
+        body: jsonEncode({                    // <--- Encode les données
+    'name': _nameController.text,
+    'email': _emailController.text,
+    'password': _passwordController.text,
+    'password_confirmation': _confirmController.text,
+  }),
       );
 
       if (response.statusCode == 201) {
