@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense.model.dart';
 
 class ApiService {
-  final String baseUrl = "http://10.0.2.2:8000/api/expenses";
+  final String baseUrl = "https://fullstack-mobile-budgetapp.onrender.com/api";
 
   // Fonction privée pour récupérer les headers avec le token
   Future<Map<String, String>> _getHeaders() async {
