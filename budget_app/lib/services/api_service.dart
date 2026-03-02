@@ -14,7 +14,7 @@ class ApiService {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization': 'Bearer $token', // C'est ici que la magie opère
+      'Authorization': 'Bearer $token',
     };
   }
 
@@ -40,16 +40,18 @@ class ApiService {
 
   // Ajouter une dépense
   Future<void> addExpense(Expense expense) async {
-    final response = await http.post(
-      Uri.parse(baseUrl),
-      headers: await _getHeaders(),
-      body: jsonEncode(expense.toJson()),
-    );
+  final response = await http.post(
+    Uri.parse("$baseUrl/expenses"), // Vérifie que l'URL est bien https://.../api/expenses
+    headers: await _getHeaders(), // Vérifie que _getHeaders contient bien le Token
+    body: jsonEncode(expense.toJson()), // Encode bien en JSON
+  );
 
-    if (response.statusCode != 201) {
-      throw Exception('Erreur lors de la création');
-    }
+  if (response.statusCode != 201) {
+    print("Code d'erreur : ${response.statusCode}");
+    print("Message du serveur : ${response.body}");
+    throw Exception('Erreur lors de la création : ${response.body}');
   }
+}
 
   // Supprimer une dépense
   Future<void> deleteExpense(int id) async {
