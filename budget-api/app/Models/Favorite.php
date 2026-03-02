@@ -7,4 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Favorite extends Model
 {
     //
+    protected $fillable = [
+        'user_id',
+        'movie_id',
+        'title',
+        'overview',
+        'poster_path',
+        'vote_average',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
