@@ -16,7 +16,8 @@ class AuthController extends Controller
     'name' => [
     'required',
     'string',
-    'regex:/^[\pL\s]+$/u', // \pL = n'importe quelle lettre (Unicode), \s = espace
+    // Autorise : A-Z, a-z, espaces, et les accents français courants
+    'regex:/^[a-zA-Z\sàâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ]+$/u',
 ],
     'email'    => 'required|string|email|unique:users,email',
     'password' => 'required|string|min:6|confirmed',
