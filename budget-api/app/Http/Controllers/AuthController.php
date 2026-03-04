@@ -100,4 +100,14 @@ public function updatePassword(Request $request)
         'message' => 'Mot de passe modifié avec succès',
     ]);
 }
+
+public function logout(Request $request)
+{
+    // Supprime le token actuel
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json([
+        'message' => 'Déconnexion réussie'
+    ]);
+}
 }
