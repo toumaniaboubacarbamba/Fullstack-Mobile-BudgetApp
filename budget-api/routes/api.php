@@ -23,4 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'index']);
     Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
+
+    Route::put('user/update', [AuthController::class, 'updateprofil']);
+    Route::put('user/password', [AuthController::class, 'updatepassword']);
 });

@@ -54,4 +54,50 @@ class AuthController extends Controller
         'user' => $user
     ]);
 }
+
+// Modifier le nom
+public function updateProfile(Request $request)
+{
+    $fields = $request->validate([
+        'name' => [
+            'required',
+            'string',
+            'regex:/^[a-zA-Z\sàâäéèêëîïôöùûüÿçÀÂÄÉÈÊËÎÏÔÖÙÛÜŸÇ]+$/u',
+        ],
+    ]);
+
+    $user = $request->user();
+    $user->update(['name' => $fields['name']]);
+
+    return response()->json([
+        'message' => 'Profil mis à jour avec succès',
+        'user' => $user,
+    ]);
+}
+
+// Modifier le mot de passe
+public function updatePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required|string',
+        'password'         => 'required|string|min:6|confirmed',
+    ]);
+
+    $user = $request->user();
+
+    // On vérifie que l'ancien mot de passe est correct
+    if (!Hash::check($request->current_password, $user->password)) {
+        return response()->json([
+            'message' => 'Mot de passe actuel incorrect',
+        ], 401);
+    }
+
+    $user->update([
+        'password' => bcrypt($request->password),
+    ]);
+
+    return response()->json([
+        'message' => 'Mot de passe modifié avec succès',
+    ]);
+}
 }
